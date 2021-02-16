@@ -12,6 +12,8 @@ Controls (game)
  - Left click to move to new position
  - Space to drop bomb
  - 1 and 2 to switch bomb type
+ - Escape to exit to level select screen
+ - R to restart the current level
  
 Controls (level editor)
 -----------------------
