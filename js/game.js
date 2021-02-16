@@ -151,7 +151,7 @@ function AUDIOEngine(sounds, onLoad) {
         toLoad += 1;
 
         let request = new XMLHttpRequest();
-        request.open('GET', '/sfx' + sounds[key], true);
+        request.open('GET', 'sfx' + sounds[key], true);
         request.responseType = 'arraybuffer';
         request.onload = (req) => {
             this.actx.decodeAudioData(req.target.response, (buffer) => {
@@ -169,7 +169,7 @@ function AUDIOEngine(sounds, onLoad) {
     this.gain = this.actx.createGain();
     this.gain.connect(this.actx.destination);
 
-    this.reverbNode = this.actx.createReverbFromUrl("/sfx/R1NuclearReactorHall.m4a", () => {
+    this.reverbNode = this.actx.createReverbFromUrl("sfx/R1NuclearReactorHall.m4a", () => {
         this.reverbNode.connect(this.gain);
         window.totalLoaded += 1;
         toLoad -= 1;
@@ -333,7 +333,7 @@ function init (editor, tester) {
 
     let toLoad = 1;
     let imgLoaded = () => { toLoad -= 1; window.totalLoaded += 1; if (toLoad <= 0) { afterLoadInit(); } };
-    let loadImage = (file) => { let img = new Image(); toLoad += 1; window.totalToLoad += 1; img.src = '/img/' + file; img.onload = imgLoaded; return img; }
+    let loadImage = (file) => { let img = new Image(); toLoad += 1; window.totalToLoad += 1; img.src = 'img/' + file; img.onload = imgLoaded; return img; }
 
     let menuGradImg = loadImage('menu-grad.png');
     let gameBgImg = loadImage('game-bg.png');
@@ -2183,7 +2183,7 @@ function init (editor, tester) {
             TDDown = false;
         }
         else if (e.which === 27 && !initEditor && !tester && !editor && !inMenu && !player.ascended && (fadeInT > 0.99)) {
-            tinyxhr(parseInt(window.localStorage.getItem('lastLevelCleared') || 0) > 15 ? "/lvl/menu-cleared.json" : "/lvl/menu.json", (err,data,xhr) => {
+            tinyxhr(parseInt(window.localStorage.getItem('lastLevelCleared') || 0) > 15 ? "lvl/menu-cleared.json" : "lvl/menu.json", (err,data,xhr) => {
                 loadLevel(JSON.parse(data));
                 gotoLevel = false;
                 gotoLevelT = 0;
@@ -2448,7 +2448,7 @@ function init (editor, tester) {
 
     const afterLoadInit = () => {
         if (inMenu) {
-            tinyxhr(parseInt(window.localStorage.getItem('lastLevelCleared') || 0) > 15 ? "/lvl/menu-cleared.json" : "/lvl/menu.json", (err,data,xhr) => {
+            tinyxhr(parseInt(window.localStorage.getItem('lastLevelCleared') || 0) > 15 ? "lvl/menu-cleared.json" : "lvl/menu.json", (err,data,xhr) => {
                 loadLevel(JSON.parse(data));
                 gotoLevel = false;
                 gotoLevelT = 0;
@@ -3499,7 +3499,7 @@ function init (editor, tester) {
             gotoLevelT -= dt / 1.;
             if (gotoLevelT < 0 && levelToLoad > 0) {
                 currentLevel = levelToLoad;
-                tinyxhr("/lvl/level-" + levelToLoad + ".json", (err,data,xhr) => {
+                tinyxhr("lvl/level-" + levelToLoad + ".json", (err,data,xhr) => {
                     loadLevel(JSON.parse(data));
                     inMenu = false;
                     gotoLevel = false;
@@ -3565,7 +3565,7 @@ function init (editor, tester) {
 
         if (tWasDown && !TDown && initEditor) {
             window.localStorage.setItem('editorTestLevel', serialize());
-            window.open('/test.html', '_blank');
+            window.open('test.html', '_blank');
             //editor = !editor;
         }
         if (((tdWasDown && !TDDown) || (player.ascendT <= 0.001 && player.ascended)) && (initEditor || !tester)) {
@@ -3619,7 +3619,7 @@ function init (editor, tester) {
                 }
                 window.localStorage.setItem('maxGemsL' + currentLevel, totalGems);
 
-                tinyxhr(parseInt(window.localStorage.getItem('lastLevelCleared') || 0) > 15 ? "/lvl/menu-cleared.json" : "/lvl/menu.json", (err,data,xhr) => {
+                tinyxhr(parseInt(window.localStorage.getItem('lastLevelCleared') || 0) > 15 ? "lvl/menu-cleared.json" : "lvl/menu.json", (err,data,xhr) => {
                     loadLevel(JSON.parse(data));
                     gotoLevel = false;
                     gotoLevelT = 0;
