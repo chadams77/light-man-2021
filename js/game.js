@@ -2275,7 +2275,7 @@ function init (editor, tester) {
             const L = limbs[i];
             let _ret = collidePlayerClosest(L.x, L.y, prtPos, prtVel, prtAttr, canvas2);
             let ret = { x: _ret[0], y: _ret[1], type: _ret[2], heat: _ret[3], radius: _ret[4], vx: _ret[5], vy: _ret[6], dist: _ret[7] };
-            if (ret.type === 2 && ret.dist < (IR+ret.radius*1.5)) {
+            if ((ret.type === 2 || (ret.type === 0 && ret.heat < -0.5)) && ret.dist < (IR+ret.radius*1.5)) {
                 let dx0 = p.x - L.x;
                 let dy0 = p.y - L.y;
                 let dlen0 = Math.sqrt(dx0*dx0+dy0*dy0);
