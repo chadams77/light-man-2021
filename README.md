@@ -4,7 +4,8 @@ LIGHT MAN - Platformer with GPU (GPU.js) accelerated liquid physics &amp; destru
 # GAME
 
 HOSTED DEMO: https://chadams77.github.io/light-man-2021
-- Est. Requirements are Chrome with a GTX 1050 TI / RX570 or better (will update requirements when more testing is done)
+- Est. Requirements are Chrome or Firefox with a GTX 1050 / RX560 or better (will update requirements when more testing is done)
+- Note: On one machine it didn't work on Chrome but did work in Firefox
 
 Controls (game)
 ---------------
