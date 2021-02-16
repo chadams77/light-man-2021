@@ -2040,8 +2040,9 @@ function init (editor, tester) {
     canvas.onmousemove = (e) => {
         e = e || window.event;
         mouseX = e.pageX || 0; mouseY = e.pageY || 0;
-        mouseGX = (mouseX - (W/2-H/2)) / (H/GSZ);
-        mouseGY = (mouseY - 0) / (H/GSZ);
+        let w2 = window.innerWidth, h2 = window.innerHeight;
+        mouseGX = (mouseX - (w2/2-h2/2)) / (h2/GSZ);
+        mouseGY = (mouseY - 0) / (h2/GSZ);
     };
 
     let soundInit = false;
