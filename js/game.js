@@ -424,6 +424,7 @@ function init (editor, tester) {
             maxSounds: 1024,
             gpu: gpu,
             audioContext: AUDIO.actx,
+            destinationNode: AUDIO.reverbNode,
             onLoad: () => {
                 initFluidSfx();
                 imgLoaded();
