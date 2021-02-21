@@ -421,7 +421,7 @@ function init (editor, tester) {
                 'sizzle': 'sfx/sizzle.wav',
                 'freeze': 'sfx/freeze.wav'
             },
-            maxSounds: 1024,
+            maxSounds: 512,
             gpu: gpu,
             audioContext: AUDIO.actx,
             destinationNode: AUDIO.reverbNode,
