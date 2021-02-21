@@ -2432,12 +2432,14 @@ function init (editor, tester) {
         if (!soundInit) {
             return;
         }
-        let inf = gpuMixer.getSoundsArrayTexture();
-        let newTex = updateFluidSfxKernel(inf.texture, inf.time, dt, prtPos, prtVel, lPrtVel, prtAttr, player.floating);
-        gpuMixer.updateAllSoundsGPU(newTex);
+        if (Math.random() < 0.2) {
+            let inf = gpuMixer.getSoundsArrayTexture();
+            let newTex = updateFluidSfxKernel(inf.texture, inf.time, dt, prtPos, prtVel, lPrtVel, prtAttr, player.floating);
+            gpuMixer.updateAllSoundsGPU(newTex);
+        }
         gpuMixer.position.x = player.x;
-        gpuMixer.position.y = player.y;
-        gpuMixer.position.range = GSZ * 0.2;
+        gpuMixer.position.y = player.y - (inMenu ? GSZ * 0.22 : 0);
+        gpuMixer.position.range = GSZ * 0.25;
         gpuMixer.position.behindPercent = 0.2;
     }
 

@@ -175,7 +175,7 @@ window.GLS_GPUMixer = function (args) {
                     this.waTimeOffset = this.time - this.actx.currentTime;
                     //this.swapBuffers();
 
-                    setInterval(this.tick.bind(this), 1);
+                    setInterval(this.tick.bind(this), Math.ceil(1000 * this.bufferLengthSeconds * 0.5));
 
                     if (this.onLoad) {
                         this.onLoad();
