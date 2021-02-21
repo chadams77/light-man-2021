@@ -374,28 +374,6 @@ function init (editor, tester) {
     let fireBallImg = loadImage('fireball.png');
     let iceBallImg = loadImage('iceball.png');
 
-    let AUDIO = new AUDIOEngine({
-        'water': '/water-loop.mp3',
-        'lava': '/lava-loop.mp3',
-        'bio': '/bio-loop.mp3',
-        'explosion': '/explosion.mp3',
-        'hover': '/hover.mp3',
-        'click': '/click.mp3',
-        'move': '/move.mp3',
-        'grab': '/grab.mp3',
-        'get-bomb': '/get-bomb.mp3',
-        'note1': '/note1.mp3',
-        'note2': '/note2.mp3',
-        'note3': '/note3.mp3',
-        'note4': '/note4.mp3',
-        'note5': '/note5.mp3',
-        'note6': '/note6.mp3',
-        'note7': '/note7.mp3',
-        'hurt-die': '/hurt-die.mp3'
-    }, () => {
-        imgLoaded();
-    });
-
     let mouseX = 0, mouseY = 0;
     let mouseGX = 0, mouseGY = 0;
     let mouseLeft = false, mouseRight = false;
@@ -415,6 +393,42 @@ function init (editor, tester) {
         canvas: gpuCanvas,
         context: gpuContext,
         mode: 'gpu'
+    });
+    let gpuMixer = null;
+
+    let AUDIO = new AUDIOEngine({
+        'explosion': '/explosion.wav',
+        'hover': '/hover.wav',
+        'click': '/click.wav',
+        'move': '/move.wav',
+        'grab': '/grab.wav',
+        'get-bomb': '/get-bomb.wav',
+        'note1': '/note1.wav',
+        'note2': '/note2.wav',
+        'note3': '/note3.wav',
+        'note4': '/note4.wav',
+        'note5': '/note5.wav',
+        'note6': '/note6.wav',
+        'note7': '/note7.wav',
+        'hurt-die': '/hurt-die.wav'
+    }, () => {
+        totalToLoad += 5;
+        gpuMixer = new GLS_GPUMixer({
+            loadSamplesGPU: {
+                'water-drop': 'sfx/water-drop.wav',
+                'lava-drop': 'sfx/lava-drop.wav',
+                'bio-drop': 'sfx/bio-drop.wav',
+                'sizzle': 'sfx/sizzle.wav',
+                'freeze': 'sfx/freeze.wav'
+            },
+            maxSounds: 1024,
+            gpu: gpu,
+            audioContext: AUDIO.actx,
+            onLoad: () => {
+                initFluidSfx();
+                imgLoaded();
+            }   
+        });
     });
 
     gpu.addNativeFunction('rand2D',
@@ -1557,93 +1571,6 @@ function init (editor, tester) {
         tactic: 'speed'
     });
 
-    let sampleLiquidSoundInfo = gpu.createKernel(function(_px, _py, positions, velocities, lVelocities, attribs, pHash) {
-
-        let i2 = Math.floor(this.thread.x/3);
-        let xx = (i2 % 17) - 8;
-        let yy = Math.floor(i2 / 17) - 8;
-        let px = _px + xx * 30., py = _py + yy * 30.;
-        let total = 0.;
-        let density = 0.;
-        let totalV = 0.;
-        let avgSpeed = 0.;
-        let type0c = 0., type1c = 0., type4c = 0.;
-        for (let ix=-7; ix<=7; ix+=1) {
-            for (let iy=-7; iy<=7; iy+=1) {
-                total += 1.;
-                let fy = 511. - Math.floor(py*0.5 + iy);
-                let fx = Math.floor(px*0.5 + ix);
-                if (fx >= 0 && fy >= 0 && fx < this.constants.GSZ*0.5 && fy < this.constants.GSZ*0.5) {
-                    let hClr = pHash[fy][fx];
-                    if (hClr[3] > 0.5) {
-                        let i = Math.floor(hClr[0] * 255. * 256. + hClr[1] * 255.);
-                        let x = positions[i*2], y = positions[i*2+1];
-                        let type = attribs[i*5+0];
-                        if (type === 3) {
-                            type = 1;
-                        }
-                        if (type === 0) {
-                            type0c += 1.;
-                        }
-                        else if (type === 1) {
-                            type1c += 1.;
-                        }
-                        else if (type === 4) {
-                            type4c += 1.;
-                        }
-                        if (type === 0 || type === 1 || type === 4) {
-                            let dx = x - px, dy = y - py;
-                            let dist = Math.sqrt(dx*dx+dy*dy);
-                            let F = Math.pow(Math.max(1. - dist / 12., 0.), 0.15);
-                            let heat = attribs[i*5+1];
-                            if (type !== 1) {
-                                F *= 1. + 24 * Math.max(0., heat);
-                                density -= heat * F * 0.5;
-                                avgSpeed += Math.max(0., heat) * 500 * F;
-                            }
-                            density += F;
-                            totalV += F;
-                            avgSpeed += Math.pow(Math.pow(velocities[i*2]-lVelocities[i*2], 2.) + Math.pow(velocities[i*2+1]-lVelocities[i*2+1], 2.), 0.1) * F * 10;
-                        }
-                    }
-                }
-            }
-        }
-
-        if (total > 0.) {
-            density /= (total);
-        }
-        if (totalV > 0.) {
-            avgSpeed /= (totalV);
-        }
-
-        if ((this.thread.x%3) === 0) {
-            return density;
-        }
-        else if ((this.thread.x%3) === 1) {
-            return avgSpeed;
-        }
-        else if ((this.thread.x%3) === 2) {
-            if (type0c >= type1c && type0c >= type4c) {
-                return 0.;
-            }
-            else if (type1c >= type0c && type1c >= type4c) {
-                return 1.;
-            }
-            else if (type4c >= type1c && type4c >= type0c) {
-                return 0.;
-            }
-        }
-    }, {
-        constants: {
-            NUM_PRT: NUM_PRT,
-            GSZ: GSZ
-        },
-        output: [ 3*17*17 ],
-        loopMaxIterations: 1024,
-        tactic: 'speed'
-    });
-
     let renderLayers = gpu.createKernel(function(
             positions, attribs, pHash,
             _r0, _g0, _b0, _a0,  _re0, _ge0, _be0, _ae0,
@@ -2047,17 +1974,9 @@ function init (editor, tester) {
 
     let soundInit = false;
 
-    let fluidSoundsW = [], fluidSoundsL = [], fluidSoundsB = [];
-    let fsCache = [];
-
     canvas.onclick = (e) => {
         if (!soundInit && AUDIO.loaded) {
             soundInit = true;
-            for (let i=0; i<24; i++) {
-                fluidSoundsW.push(AUDIO.createSound('water', {rate: 1, volume: 0, loop: true, randomOffset: true}));
-                fluidSoundsL.push(AUDIO.createSound('lava', {rate: 1, volume: 0, loop: true, randomOffset: true}));
-                fluidSoundsB.push(AUDIO.createSound('bio', {rate: 1, volume: 0, loop: true, randomOffset: true}));
-            }
         }
     }
 
@@ -2510,58 +2429,16 @@ function init (editor, tester) {
     let lastBomb = 0;
 
     function updateFluidSfx() {
-        let slist = [];
-
-        if (Math.random() < 0.25) {
-            fsCache = sampleLiquidSoundInfo(inMenu ? (player.x*0.25 + pickUps[0].x*0.75) : player.x, inMenu ? (player.y*0.25 + pickUps[0].y*0.75) : player.y, prtPos, prtVel, lPrtVel, prtAttr, canvas2);
+        if (!soundInit) {
+            return;
         }
-        for (let x=-8; x<=8; x++) {
-            for (let y=-8; y<=8; y++) {
-                let xx = x + 8, yy = y + 8;
-                let o = (xx + yy * 17) * 3;
-                let ret = [ fsCache[o] || 0, fsCache[o+1] || 0, fsCache[o+2] || 0 ];
-                let vol = 0.5 * Math.pow(ret[0]*Math.max(0., (ret[1]-10)*2), 0.2) / ((1+x*x+y*y)*0.2);
-                let freq = 0.5 + Math.pow(Math.max(0., (ret[1]-10)*2), 0.05) * (vol * 0.2 + 0.8);
-                slist.push({vol, freq, w: 0.5 + vol * (0.5 + Math.abs(freq - 1)), type: ret[2], x: x/3});
-            }
-        }
-        slist.sort((a,b)=>(b.w - a.w));
-        let slW = [], slL = [], slB = [];
-        for (let i=0; i<slist.length; i++) {
-            if (slist[i].type === 0) {
-                slW.push(slist[i]);
-            }
-            else if (slist[i].type === 1) {
-                slL.push(slist[i]);
-            }
-            else if (slist[i].type === 4) {
-                slB.push(slist[i]);
-            }
-        }
-        for (let i=0; i<fluidSoundsW.length; i++) {
-            if (i < slW.length) {
-                fluidSoundsW[i].update(slW[i].vol, slW[i].freq * (1. - player.floating*2) * 0.5, slW[i].x);
-            }
-            else {
-                fluidSoundsW[i].update(0., 0.5, 0.);
-            }
-        }
-        for (let i=0; i<fluidSoundsL.length; i++) {
-            if (i < slL.length) {
-                fluidSoundsL[i].update(slL[i].vol * 0.35, slL[i].freq * (1. - player.floating*2) * 0.25, slL[i].x);
-            }
-            else {
-                fluidSoundsL[i].update(0., 0.25, 0.);
-            }
-        }
-        for (let i=0; i<fluidSoundsB.length; i++) {
-            if (i < slB.length) {
-                fluidSoundsB[i].update(slB[i].vol * 0.5, slB[i].freq * (1. - player.floating*2) * 0.25, slB[i].x);
-            }
-            else {
-                fluidSoundsB[i].update(0., 0.25, 0.);
-            }
-        }
+        let inf = gpuMixer.getSoundsArrayTexture();
+        let newTex = updateFluidSfxKernel(inf.texture, inf.time, dt, prtPos, prtVel, lPrtVel, prtAttr, player.floating);
+        gpuMixer.updateAllSoundsGPU(newTex);
+        gpuMixer.position.x = player.x;
+        gpuMixer.position.y = player.y;
+        gpuMixer.position.range = GSZ * 0.2;
+        gpuMixer.position.behindPercent = 0.2;
     }
 
     function tickMusic() {
@@ -2590,6 +2467,109 @@ function init (editor, tester) {
         }
     }
 
+    let updateFluidSfxKernel = null;
+
+    function initFluidSfx () {
+        let inf = gpuMixer.getSoundsArrayTexture();
+        updateFluidSfxKernel = gpu.createKernel(function(sounds, time, dt, positions, vels, lvels, attribs, floating){
+            let idx = Math.floor(this.thread.x / this.constants.attributes);
+            let attr = this.thread.x % this.constants.attributes;
+
+            let index = sounds[idx * this.constants.attributes + 0];
+            let startTime = sounds[idx * this.constants.attributes + 1];
+            let rate = sounds[idx * this.constants.attributes + 2];
+            let volume = sounds[idx * this.constants.attributes + 3];
+            let sx = sounds[idx * this.constants.attributes + 4];
+            let sy = sounds[idx * this.constants.attributes + 5];
+
+            for (let i=0; i<this.constants.step; i++) {
+                let j = idx + i * this.constants.maxSounds;
+                let type = attribs[j*5+0];
+                let hp = attribs[j*5+4];
+                if (hp > 0. && (type === 0 || type === 1 || type === 4) && ((time-startTime) > 2.1*rate || index < -0.5)) {
+                    let heat = Math.max(-1, Math.min(1, attribs[j*5+1]));
+                    let radius = attribs[j*5+2];
+                    let visc = attribs[j*5+3];
+                    let vx = vels[j*2+0], vy = vels[j*2+1];
+                    let lvx = lvels[j*2+0], lvy = lvels[j*2+1];
+                    let ds = Math.sqrt(vx*vx+vy*vy) * dt;
+                    vx -= lvx; vy -= lvy;
+                    ds += Math.sqrt(vx*vx+vy*vy) * 2. * dt;
+                    if (ds > 1.) {
+                        index = this.constants.waterIndex;
+                        startTime = time;
+                        volume = 0.0000025 * (rand2D(j, time)*0.5+0.5) * Math.pow(ds/10., 6.0);
+                        rate = (1.8 + rand2D(j+156.34145, time) * 1.5) * (0.5 + Math.pow(ds/5., 4.0));
+                        if (type === 4) {
+                            volume *= 2;
+                            rate *= 0.35;
+                            index = this.constants.bioIndex;
+                        }
+                        else if (type === 1) {
+                            volume *= 4;
+                            rate *= 0.15;
+                            index = this.constants.lavaIndex;
+                        }
+                        else {
+                            rate *= 0.5;
+                        }
+
+                        if ((type === 0 || type === 4) && heat > rand2D(j, time)) {
+                            volume *= (1. + heat * 3.) * 4.;
+                            index = this.constants.sizzleIndex;
+                        }
+                        else if ((type === 0 || type === 1) && -heat > rand2D(j, time)) {
+                            volume *= (1. + Math.min(-heat*16., 1.) * 3.) * 2.;
+                            index = this.constants.freezeIndex;
+                        }
+                        rate = (rate + 0.5) * 0.5;
+                        if (floating > 0.25) {
+                            rate *= 0.35;
+                        }
+                        sx = positions[j*2+0];
+                        sy = positions[j*2+1];
+                    }
+                    else if ((type === 0 || type === 1) && -heat > rand2D(j, time)) {
+                        rate = (1.8 + rand2D(j+156.34145, time) * 1.5);
+                        if (type === 0) {
+                            rate *= 1.75;
+                        }
+                        volume = (1. + Math.min(-heat*16., 1.) * 3.) * 0.0000004;
+                        index = this.constants.freezeIndex;
+                        startTime = time;
+                        sx = positions[j*2+0];
+                        sy = positions[j*2+1];
+                    }
+                }
+            }
+
+            if (attr === 0) { return index; }
+            else if (attr === 1) { return startTime; }
+            else if (attr === 2) { return rate; }
+            else if (attr === 3) { return volume; }
+            else if (attr === 4) { return sx; }
+            else { return sy; }
+        }, {
+            constants: {
+                maxSounds: inf.maxSounds,
+                attributes: inf.attributes,
+                step: NUM_PRT / inf.maxSounds,
+                NUM_PRT: NUM_PRT,
+                GSZ: GSZ,
+                waterIndex: gpuMixer.sampleIndex['water-drop'],
+                bioIndex: gpuMixer.sampleIndex['water-drop'],
+                lavaIndex: gpuMixer.sampleIndex['water-drop'],
+                sizzleIndex: gpuMixer.sampleIndex['sizzle'],
+                freezeIndex: gpuMixer.sampleIndex['freeze']
+            },
+            output: [ inf.maxSounds * inf.attributes ],
+            loopMaxIterations: NUM_PRT / inf.maxSounds,
+            pipeline: true,
+            tactic: 'speed',
+            immutable: true
+        });
+    }
+
     let levelToLoad = -1, currentLevel = 0;
 
     function renderFrame () {
@@ -2615,12 +2595,14 @@ function init (editor, tester) {
         ctx.globalAlpha = 1.0;
         ctx.drawImage(gameBgImg, PX(-17), PY(-17), H+PSZ(34), H+PSZ(34));
 
+        if (gpuMixer) { gpuMixer.tick(); }
         lPrtVel = copyAR2(prtVel);
         prtVel = updateVelocities(prtPos, prtVel, prtAttr, canvas2, dt, player.x, player.y);
         prtAttr = updateAttributes(prtAttr, prtPos, prtVel, canvas2, airHeatMap, dt);
         prtPos = updatePositions(prtPos, prtVel, dt);
         airHeatMap = updateAirHeatMap(airHeatMap, canvas2, prtPos, prtVel, prtAttr, dt);
         hash.update(prtPos, prtAttr);
+        if (gpuMixer) { gpuMixer.tick(); }
 
         for (let i=0; i<pipes.length; i++) {
             let P = pipes[i];
