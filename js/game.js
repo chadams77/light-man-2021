@@ -2439,7 +2439,7 @@ function init (editor, tester) {
             gpuMixer.updateAllSoundsGPU(newTex);
         }
         gpuMixer.position.x = player.x;
-        gpuMixer.position.y = player.y - (inMenu ? GSZ * 0.22 : 0);
+        gpuMixer.position.y = player.y - (inMenu ? GSZ * 0.1 : 0);
         gpuMixer.position.range = GSZ * 0.25;
         gpuMixer.position.behindPercent = 0.2;
     }
@@ -2501,7 +2501,7 @@ function init (editor, tester) {
                     if (ds > 1.) {
                         index = this.constants.waterIndex;
                         startTime = time;
-                        volume = 0.0000025 * (rand2D(j, time)*0.5+0.5) * Math.pow(ds/10., 6.0);
+                        volume = 0.75 * (rand2D(j, time)*0.5+0.5) * Math.pow(ds/5., 1.5);
                         rate = (1.8 + rand2D(j+156.34145, time) * 1.5) * (0.5 + Math.pow(ds/5., 4.0));
                         if (type === 4) {
                             volume *= 2;
@@ -2518,11 +2518,21 @@ function init (editor, tester) {
                         }
 
                         if ((type === 0 || type === 4) && heat > rand2D(j, time)) {
-                            volume *= (1. + heat * 3.) * 4.;
+                            volume *= (1. + heat * 3.) * 1.;
+                            if (type === 4) {
+                                volume *= 2.;
+                            }
                             index = this.constants.sizzleIndex;
                         }
                         else if ((type === 0 || type === 1) && -heat > rand2D(j, time)) {
-                            volume *= (1. + Math.min(-heat*16., 1.) * 3.) * 2.;
+                            volume *= (1. + Math.min(-heat*16., 1.) * 3.);
+                            rate *= 4.;
+                            if (type === 0) {
+                                rate *= 1.5;
+                            }
+                            else if (type === 1) {
+                                volume *= 2.5;
+                            }
                             index = this.constants.freezeIndex;
                         }
                         rate = (rate + 0.5) * 0.5;
@@ -2537,7 +2547,7 @@ function init (editor, tester) {
                         if (type === 0) {
                             rate *= 1.75;
                         }
-                        volume = (1. + Math.min(-heat*16., 1.) * 3.) * 0.0000004;
+                        volume = (1. + Math.min(-heat*16., 1.) * 3.) * 0.04;
                         index = this.constants.freezeIndex;
                         startTime = time;
                         sx = positions[j*2+0];

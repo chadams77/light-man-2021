@@ -53,7 +53,7 @@ window.GLS_GPUMixer = function (args) {
         let channel = this.thread.x % 2;
 
         let value = 0.0;
-        let numSounds = 0.;
+        //let numSounds = 0.;
 
         let soff = 0;
         for (let i=0; i<this.constants.maxGPUSounds; i+=1) {
@@ -88,9 +88,9 @@ window.GLS_GPUMixer = function (args) {
                         let cval = sampCache[offset+position*2+channel] * panf;
                         let lval = sampBehindCache[offset+position*2+channel] * panf * 10.;
 
-                        let f = volume * tStart * tEnd;
-                        value += ((lval)*angT + (1.-angT)*cval) * Math.pow(f, 0.1);
-                        numSounds += f * 0.25 + 0.75;
+                        let f = volume * Math.pow(tStart * tEnd, 0.1);
+                        value += ((lval)*angT + (1.-angT)*cval) * f;
+                        //numSounds += f * 0.25 + 0.75;
                     }
                 }               
             }
