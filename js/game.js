@@ -3568,23 +3568,23 @@ function init (editor, tester) {
                 let lastLevelCleared = parseInt(window.localStorage.getItem('lastLevelCleared') || 0);
                 lastLevelCleared = Math.max(lastLevelCleared, currentLevel);
                 if (currentLevel > 15) {
-                    AUDIO.playSound('note3', 1.25, 0.5*0.5, 0.0);
-                    AUDIO.playSound('note4', 1.25, 0.5*0.5, 0.5);
-                    AUDIO.playSound('note5', 1.25, 1.0*0.5, 1.0);
+                    AUDIO.playSound('note3', 1.25*0.25, 0.5*0.5, 0.0);
+                    AUDIO.playSound('note4', 1.25*0.25, 0.5*0.5, 0.5);
+                    AUDIO.playSound('note5', 1.25*0.25, 1.0*0.5, 1.0);
                     setTimeout(() => {
-                        AUDIO.playSound('note7', 1.25, 0.5*1, 0.0);
-                        AUDIO.playSound('note6', 1.25, 0.5*1, 0.5);
-                        AUDIO.playSound('note5', 1.25, 1.0*1, 1.0);
+                        AUDIO.playSound('note7', 1.25*0.25, 0.5*1, 0.0);
+                        AUDIO.playSound('note6', 1.25*0.25, 0.5*1, 0.5);
+                        AUDIO.playSound('note5', 1.25*0.25, 1.0*1, 1.0);
                     }, 500);
                     setTimeout(() => {
-                        AUDIO.playSound('note3', 1.25, 0.5*2, 0.0);
-                        AUDIO.playSound('note4', 1.25, 0.5*2, 0.5);
-                        AUDIO.playSound('note5', 1.25, 1.0*2, 1.0);
+                        AUDIO.playSound('note3', 1.25*0.25, 0.5*2, 0.0);
+                        AUDIO.playSound('note4', 1.25*0.25, 0.5*2, 0.5);
+                        AUDIO.playSound('note5', 1.25*0.25, 1.0*2, 1.0);
                     }, 1000);
                     setTimeout(() => {
-                        AUDIO.playSound('note3', 1.25, 0.5*4, 0.0);
-                        AUDIO.playSound('note4', 1.25, 0.5*4, 0.5);
-                        AUDIO.playSound('note5', 1.25, 1.0*4, 1.0);
+                        AUDIO.playSound('note3', 1.25*0.25, 0.5*4, 0.0);
+                        AUDIO.playSound('note4', 1.25*0.25, 0.5*4, 0.5);
+                        AUDIO.playSound('note5', 1.25*0.25, 1.0*4, 1.0);
                     }, 1500);
                 }
                 window.localStorage.setItem('lastLevelCleared', lastLevelCleared);
